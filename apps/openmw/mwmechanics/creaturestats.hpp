@@ -47,6 +47,7 @@ namespace MWMechanics
         bool mHitRecovery;
         bool mBlock;
         unsigned int mMovementFlags;
+        bool mOnLoadGame;
 
         float mFallHeight;
 
@@ -136,7 +137,7 @@ namespace MWMechanics
         void setDynamic (int index, const DynamicStat<float> &value);
 
         /// Set Modifier for each magic effect according to \a effects. Does not touch Base values.
-        void modifyMagicEffects(const MagicEffects &effects);
+        void modifyMagicEffects(const MagicEffects &effects, bool allowMagickaRecalc = true);
 
         void setAttackingOrSpell(bool attackingOrSpell);
 
@@ -218,6 +219,7 @@ namespace MWMechanics
         bool getHitRecovery() const;
         void setBlock(bool value);
         bool getBlock() const;
+        bool getOnLoadGame();
 
         std::map<SummonKey, int>& getSummonedCreatureMap(); // <SummonKey, ActorId of summoned creature>
         std::vector<int>& getSummonedCreatureGraveyard(); // ActorIds

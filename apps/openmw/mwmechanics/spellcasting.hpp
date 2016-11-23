@@ -112,6 +112,9 @@ namespace MWMechanics
         /// @note \a caster can be any type of object, or even an empty object.
         /// @return was the target suitable for the effect?
         bool applyInstantEffect (const MWWorld::Ptr& target, const MWWorld::Ptr& caster, const MWMechanics::EffectKey& effect, float magnitude);
+        
+        /// For effects with duration that are applied once and then reversed when they end
+        void applyInstantEffectWithDuration (const MWWorld::Ptr& target, const MWWorld::Ptr& caster, const MWMechanics::EffectKey& effect, float magnitude);
     };
 
 }

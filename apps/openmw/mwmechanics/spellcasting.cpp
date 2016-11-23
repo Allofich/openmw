@@ -678,6 +678,26 @@ namespace MWMechanics
         return false;
     }
 
+    void CastSpell::applyInstantEffectWithDuration (const MWWorld::Ptr& target, const MWWorld::Ptr& caster, const MWMechanics::EffectKey& effect, float magnitude)
+    {
+        short effectId = effect.mId;
+        MWMechanics::CreatureStats& stats = target.getClass().getCreatureStats(target);
+        for(int i = 0;i < 3;++i)
+        {
+            if (effectId == ESM::MagicEffect::DrainHealth + i)
+            {
+                DynamicStat<float> stat = stats.getDynamic(i);
+                stat.setCurrent(stat.getCurrent() - magnitude, true);
+                stats.setDynamic(i,stat);
+            }
+            else if (effectId == ESM::MagicEffect::FortifyHealth + i)
+            {
+                DynamicStat<float> stat = stats.getDynamic(i);
+                stat.setCurrent(stat.getCurrent() + magnitude, true, true);
+                stats.setDynamic(i,stat);
+            }
+        }
+    }
 
     bool CastSpell::cast(const std::string &id)
     {

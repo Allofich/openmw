@@ -444,6 +444,31 @@ namespace MWMechanics
 
         now += creatureStats.getActiveSpells().getMagicEffects();
 
+        if (creatureStats.getOnLoadGame())  // Need to let effects update once on loading a game, so skip comparing
+        {
+            creatureStats.modifyMagicEffects(now, false); // Don't allow magicka recalculating or fortified magicka from save will be lost
+            return;
+        }
+ 
+        // Apply changes to health, magicka and fatigue drain and fortify effects
+        // if they began, ended or otherwise changed
+        float diff;
+        MWMechanics::CastSpell cast(creature, creature);
+
+        for(int i = 0;i < 3;++i)
+        {
+            diff = now.get(ESM::MagicEffect::DrainHealth + i).getModifier() -
+                creatureStats.getMagicEffects().get(ESM::MagicEffect::DrainHealth + i).getModifier();
+
+            if (diff)
+                cast.applyInstantEffectWithDuration(creature, creature, ESM::MagicEffect::DrainHealth + i, diff);
+
+            diff = now.get(ESM::MagicEffect::FortifyHealth + i).getModifier() -
+                creatureStats.getMagicEffects().get(ESM::MagicEffect::FortifyHealth + i).getModifier();
+
+            if (diff)
+                cast.applyInstantEffectWithDuration(creature, creature, ESM::MagicEffect::FortifyHealth + i, diff);          
+        }         
         creatureStats.modifyMagicEffects(now);
     }
 
@@ -465,8 +490,9 @@ namespace MWMechanics
         DynamicStat<float> magicka = creatureStats.getMagicka();
         float diff = (static_cast<int>(magickaFactor*intelligence)) - magicka.getBase();
         float currentToBaseRatio = (magicka.getCurrent() / magicka.getBase());
-        magicka.setModified(magicka.getModified() + diff, 0);
-        magicka.setCurrent(magicka.getBase() * currentToBaseRatio);
+        if (magicka.getCurrent() > 0)
+            magicka.setModified(magicka.getModified() + diff, 0);
+        magicka.setCurrent(magicka.getBase() * currentToBaseRatio, false, true);
         creatureStats.setMagicka(magicka);
     }
 
@@ -630,19 +656,6 @@ namespace MWMechanics
                     }
                 }
             }
-        }
-
-        // dynamic stats
-        for(int i = 0;i < 3;++i)
-        {
-            DynamicStat<float> stat = creatureStats.getDynamic(i);
-            stat.setModifier(effects.get(ESM::MagicEffect::FortifyHealth+i).getMagnitude() -
-                             effects.get(ESM::MagicEffect::DrainHealth+i).getMagnitude(),
-                             // Magicka can be decreased below zero due to a fortify effect wearing off
-                             // Fatigue can be decreased below zero meaning the actor will be knocked out
-                             i == 1 || i == 2);
-
-            creatureStats.setDynamic(i, stat);
         }
 
         // AI setting modifiers

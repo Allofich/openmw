@@ -6,7 +6,7 @@
 namespace ESM
 {
     template<typename T>
-    StatState<T>::StatState() : mBase(0), mMod(0), mCurrent(0), mDamage(0), mProgress(0) {}
+    StatState<T>::StatState() : mBase(0), mMod(0), mCurrent(0), mDamage(0), mProgress(0), mRestoreModifier(0) {}
 
     template<typename T>
     void StatState<T>::load(ESMReader &esm)
@@ -27,6 +27,9 @@ namespace ESM
 
         mProgress = 0;
         esm.getHNOT(mProgress, "STPR");
+
+        mRestoreModifier = 0;
+        esm.getHNOT(mRestoreModifier, "STRM");
     }
 
     template<typename T>
@@ -45,6 +48,9 @@ namespace ESM
 
         if (mProgress)
             esm.writeHNT("STPR", mProgress);
+
+        if (mRestoreModifier)
+            esm.writeHNT("STRM", mRestoreModifier);
     }
 }
 

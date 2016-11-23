@@ -151,13 +151,16 @@ namespace MWMechanics
                      index == ESM::Attribute::Agility ||
                      index == ESM::Attribute::Endurance)
             {
-                int strength     = getAttribute(ESM::Attribute::Strength).getModified();
-                int willpower    = getAttribute(ESM::Attribute::Willpower).getModified();
-                int agility      = getAttribute(ESM::Attribute::Agility).getModified();
-                int endurance    = getAttribute(ESM::Attribute::Endurance).getModified();
+                const int strength = getAttribute(ESM::Attribute::Strength).getModified();
+                const int willpower = getAttribute(ESM::Attribute::Willpower).getModified();
+                const int agility = getAttribute(ESM::Attribute::Agility).getModified();
+                const int endurance = getAttribute(ESM::Attribute::Endurance).getModified();
+
                 DynamicStat<float> fatigue = getFatigue();
-                float diff = (strength+willpower+agility+endurance) - fatigue.getBase();
-                float currentToBaseRatio = (fatigue.getCurrent() / fatigue.getBase());
+
+                const float diff = (strength + willpower + agility + endurance) - fatigue.getBase();
+                const float currentToBaseRatio = (fatigue.getCurrent() / fatigue.getBase());
+
                 fatigue.setModified(fatigue.getModified() + diff, 0);
                 fatigue.setCurrent(fatigue.getBase() * currentToBaseRatio);
                 setFatigue(fatigue);
@@ -195,6 +198,7 @@ namespace MWMechanics
             mDead = true;
 
             mDynamic[index].setModifier(0);
+            mDynamic[index].setCurrentModifier(0);
             mDynamic[index].setCurrent(0);
 
             if (MWBase::Environment::get().getWorld()->getGodModeState())

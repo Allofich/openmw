@@ -17,6 +17,7 @@ namespace MWMechanics
     {
             T mBase;
             T mModified;
+            T mCurrentModified;
 
         public:
             typedef T Type;
@@ -28,7 +29,9 @@ namespace MWMechanics
             const T& getBase() const;
 
             T getModified() const;
+            T getCurrentModified() const;
             T getModifier() const;
+            T getCurrentModifier() const;
 
             /// Set base and modified to \a value.
             void set (const T& value);
@@ -36,9 +39,15 @@ namespace MWMechanics
             /// Set base and adjust modified accordingly.
             void setBase (const T& value);
 
-            /// Set modified value an adjust base accordingly.
+            /// Set modified value and adjust base accordingly.
             void setModified (T value, const T& min, const T& max = std::numeric_limits<T>::max());
+
+            /// Set a "current modifier" used for health, magicka and fatigue. Unlike the regular modifier
+            /// this just adds and subtracts from the current value without changing the base.
+            void setCurrentModified(T value);
+
             void setModifier (const T& modifier);
+            void setCurrentModifier (const T& modifier);
 
             void writeState (ESM::StatState<T>& state) const;
             void readState (const ESM::StatState<T>& state);
@@ -73,6 +82,7 @@ namespace MWMechanics
 
             const T& getBase() const;
             T getModified() const;
+            T getCurrentModified() const;
             const T& getCurrent() const;
 
             /// Set base, modified and current to \a value.
@@ -81,11 +91,15 @@ namespace MWMechanics
             /// Set base and adjust modified accordingly.
             void setBase (const T& value);
 
-            /// Set modified value an adjust base accordingly.
+            /// Set modified value and adjust base accordingly.
             void setModified (T value, const T& min, const T& max = std::numeric_limits<T>::max());
+            /// Set a "current modified" value used for health, magicka and fatigue. Unlike the regular modifier
+            /// this adds and subtracts from the current value without changing its maximum.
+            void setCurrentModified(T value);
 
-            void setCurrent (const T& value, bool allowDecreaseBelowZero = false);
-            void setModifier (const T& modifier, bool allowCurrentDecreaseBelowZero=false);
+            void setCurrent (const T& value, bool allowDecreaseBelowZero = false, bool allowIncreaseAboveModified = false);
+            void setModifier (const T& modifier, bool allowCurrentToDecreaseBelowZero=false);
+            void setCurrentModifier (const T& modifier, bool allowCurrentToDecreaseBelowZero = false);
 
             void writeState (ESM::StatState<T>& state) const;
             void readState (const ESM::StatState<T>& state);
@@ -108,7 +122,8 @@ namespace MWMechanics
     class AttributeValue
     {
         int mBase;
-        int mModifier;
+        float mModifier;
+        float mRestoreModifier;
         float mDamage; // needs to be float to allow continuous damage
 
     public:
@@ -116,11 +131,12 @@ namespace MWMechanics
 
         int getModified() const;
         int getBase() const;
-        int getModifier() const;
+        float getModifier() const;
+        float getRestoreModifier() const;
 
         void setBase(int base);
 
-        void setModifier(int mod);
+        void setModifier(float positive, float negative);
 
         // Maximum attribute damage is limited to the modified value.
         // Note: I think MW applies damage directly to mModified, since you can also
@@ -150,7 +166,8 @@ namespace MWMechanics
     {
         return left.getBase() == right.getBase()
                 && left.getModifier() == right.getModifier()
-                && left.getDamage() == right.getDamage();
+                && left.getDamage() == right.getDamage()
+                && left.getRestoreModifier() == right.getRestoreModifier();
     }
     inline bool operator!= (const AttributeValue& left, const AttributeValue& right)
     {
@@ -162,7 +179,8 @@ namespace MWMechanics
         return left.getBase() == right.getBase()
                 && left.getModifier() == right.getModifier()
                 && left.getDamage() == right.getDamage()
-                && left.getProgress() == right.getProgress();
+                && left.getProgress() == right.getProgress()
+                && left.getRestoreModifier() == right.getRestoreModifier();
     }
     inline bool operator!= (const SkillValue& left, const SkillValue& right)
     {

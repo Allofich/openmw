@@ -17,6 +17,7 @@ namespace ESM
         T mCurrent;
         float mDamage;
         float mProgress;
+        float mRestoreModifier;
 
         StatState();
 

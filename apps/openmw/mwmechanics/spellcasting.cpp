@@ -678,7 +678,6 @@ namespace MWMechanics
         return false;
     }
 
-
     bool CastSpell::cast(const std::string &id)
     {
         if (const ESM::Spell *spell =
@@ -1211,5 +1210,4 @@ namespace MWMechanics
         else
             return MWBase::Environment::get().getWorld()->getStore().get<ESM::GameSetting>().find(it->second)->getString();
     }
-
 }

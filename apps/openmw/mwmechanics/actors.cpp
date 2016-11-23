@@ -499,6 +499,11 @@ namespace MWMechanics
             normalizedEncumbrance = 1;
 
         // restore fatigue
+        DynamicStat<float> fatigue = stats.getFatigue();
+
+        if (fatigue.getCurrent() >= fatigue.getModified())
+            return;
+
         float fFatigueReturnBase = settings.find("fFatigueReturnBase")->getFloat ();
         float fFatigueReturnMult = settings.find("fFatigueReturnMult")->getFloat ();
         float fEndFatigueMult = settings.find("fEndFatigueMult")->getFloat ();
@@ -506,7 +511,6 @@ namespace MWMechanics
         float x = fFatigueReturnBase + fFatigueReturnMult * (1 - normalizedEncumbrance);
         x *= fEndFatigueMult * endurance;
 
-        DynamicStat<float> fatigue = stats.getFatigue();
         fatigue.setCurrent (fatigue.getCurrent() + 3600 * x);
         stats.setFatigue (fatigue);
     }
@@ -518,6 +522,11 @@ namespace MWMechanics
 
         MWMechanics::CreatureStats& stats = ptr.getClass().getCreatureStats (ptr);
 
+        DynamicStat<float> fatigue = stats.getFatigue();
+
+        if (fatigue.getCurrent() >= fatigue.getModified())
+            return;
+
         int endurance = stats.getAttribute (ESM::Attribute::Endurance).getModified ();
 
         // restore fatigue
@@ -527,7 +536,6 @@ namespace MWMechanics
 
         float x = fFatigueReturnBase + fFatigueReturnMult * endurance;
 
-        DynamicStat<float> fatigue = stats.getFatigue();
         fatigue.setCurrent (fatigue.getCurrent() + duration * x);
         stats.setFatigue (fatigue);
     }

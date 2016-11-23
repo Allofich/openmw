@@ -84,7 +84,7 @@ namespace MWMechanics
             /// Set modified value an adjust base accordingly.
             void setModified (T value, const T& min, const T& max = std::numeric_limits<T>::max());
 
-            void setCurrent (const T& value, bool allowDecreaseBelowZero = false);
+            void setCurrent (const T& value, bool allowDecreaseBelowZero = false, bool allowIncreaseAboveModified = false);
             void setModifier (const T& modifier, bool allowCurrentDecreaseBelowZero=false);
 
             void writeState (ESM::StatState<T>& state) const;
@@ -108,7 +108,7 @@ namespace MWMechanics
     class AttributeValue
     {
         int mBase;
-        int mModifier;
+        float mModifier;
         float mDamage; // needs to be float to allow continuous damage
 
     public:
@@ -116,11 +116,11 @@ namespace MWMechanics
 
         int getModified() const;
         int getBase() const;
-        int getModifier() const;
+        float getModifier() const;
 
         void setBase(int base);
 
-        void setModifier(int mod);
+        void setModifier(float mod);
 
         // Maximum attribute damage is limited to the modified value.
         // Note: I think MW applies damage directly to mModified, since you can also

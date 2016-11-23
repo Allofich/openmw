@@ -69,6 +69,10 @@ namespace MWMechanics
 
     std::string getSummonedCreature(int effectId);
 
+    /// For effects with duration that are applied once and then reversed when they end
+    /// @return Was the effect an applicable effect with a magnitude?
+    bool applyInstantEffectWithDuration (const MWWorld::Ptr& target, const MWMechanics::EffectKey& effect, float magnitude);
+
     class CastSpell
     {
     private:

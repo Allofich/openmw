@@ -425,7 +425,6 @@ namespace MWMechanics
     void Actors::updateNpc (const MWWorld::Ptr& ptr, float duration)
     {
         updateDrowning(ptr, duration);
-        calculateNpcStatModifiers(ptr, duration);
     }
 
     void Actors::adjustMagicEffects (const MWWorld::Ptr& creature)
@@ -436,13 +435,59 @@ namespace MWMechanics
 
         MagicEffects now = creatureStats.getSpells().getMagicEffects();
 
-        if (creature.getTypeName()==typeid (ESM::NPC).name())
+        if (creature.getTypeName() == typeid(ESM::NPC).name())
         {
-            MWWorld::InventoryStore& store = creature.getClass().getInventoryStore (creature);
+            const MWWorld::InventoryStore& store = creature.getClass().getInventoryStore(creature);
             now += store.getMagicEffects();
         }
 
         now += creatureStats.getActiveSpells().getMagicEffects();
+
+        // If we just loaded a saved game, magic effects need to update once to get
+        // to their pre-save magnitudes, so return without comparing.
+        if (creatureStats.getOnLoadGame())
+        {
+            creatureStats.modifyMagicEffects(now);
+            creatureStats.setOnLoadGame(false);
+            return;
+        }
+
+        // For effects that are applied instantly and are reversed on the effect ending (drain and fortify)
+        // check if the modifiers for those effects changed, and if so, apply or reverse the effect.
+        float diff = 0.f;
+        std::vector<short> checked;
+
+        // Check for magnitude differences in the effects in "now" and those in creatureStats.getMagicEffects(), which is from the previous update
+        for (MagicEffects::Collection::const_iterator it = creatureStats.getMagicEffects().begin();
+            it != creatureStats.getMagicEffects().end(); ++it)
+        {
+            diff = now.get(it->first).getModifier() - creatureStats.getMagicEffects().get(it->first).getModifier();
+            if (diff)
+                applyInstantEffectWithDuration(creature, it->first, diff);
+            checked.push_back(it->first.mId);
+        }
+
+        // Also check for any effects that were only in "now" due to being newly added
+        for (MagicEffects::Collection::const_iterator it = now.begin();
+            it != now.end(); ++it)
+        {
+            std::vector<short>::iterator it2;
+            it2 = find(checked.begin(), checked.end(), it->first.mId);
+
+            if (it2 == checked.end())
+            {
+                diff = now.get(it->first).getModifier() - creatureStats.getMagicEffects().get(it->first).getModifier();
+                if (diff)
+                    applyInstantEffectWithDuration(creature, it->first, diff);
+            }
+        }
+
+        if (creatureStats.needToRecalcDynamicStats())
+            calculateDynamicStats(creature);
+
+        if (now.get(ESM::MagicEffect::FortifyMaximumMagicka).getModifier()
+                != creatureStats.getMagicEffects().get(ESM::MagicEffect::FortifyMaximumMagicka).getModifier())
+            creatureStats.setNeedRecalcDynamicStats(true);
 
         creatureStats.modifyMagicEffects(now);
     }
@@ -451,7 +496,7 @@ namespace MWMechanics
     {
         CreatureStats& creatureStats = ptr.getClass().getCreatureStats (ptr);
 
-        int intelligence = creatureStats.getAttribute(ESM::Attribute::Intelligence).getModified();
+        const int intelligence = creatureStats.getAttribute(ESM::Attribute::Intelligence).getModified();
 
         float base = 1.f;
         if (ptr == getPlayer())
@@ -459,14 +504,15 @@ namespace MWMechanics
         else
             base = MWBase::Environment::get().getWorld()->getStore().get<ESM::GameSetting>().find("fNPCbaseMagickaMult")->getFloat();
 
-        double magickaFactor = base +
+        const double magickaFactor = base +
             creatureStats.getMagicEffects().get (EffectKey (ESM::MagicEffect::FortifyMaximumMagicka)).getMagnitude() * 0.1;
 
         DynamicStat<float> magicka = creatureStats.getMagicka();
-        float diff = (static_cast<int>(magickaFactor*intelligence)) - magicka.getBase();
-        float currentToBaseRatio = (magicka.getCurrent() / magicka.getBase());
-        magicka.setModified(magicka.getModified() + diff, 0);
-        magicka.setCurrent(magicka.getBase() * currentToBaseRatio);
+        const float diff = (static_cast<int>(magickaFactor*intelligence)) - magicka.getBase();
+        const float currentToBaseRatio = (magicka.getCurrent() / magicka.getBase());
+        if (magicka.getCurrent() > 0)
+            magicka.setModified(magicka.getModified() + diff, 0);
+        magicka.setCurrent(magicka.getBase() * currentToBaseRatio, false, true);
         creatureStats.setMagicka(magicka);
     }
 
@@ -499,6 +545,11 @@ namespace MWMechanics
             normalizedEncumbrance = 1;
 
         // restore fatigue
+        DynamicStat<float> fatigue = stats.getFatigue();
+
+        if (fatigue.getCurrent() >= fatigue.getModified())
+            return;
+
         float fFatigueReturnBase = settings.find("fFatigueReturnBase")->getFloat ();
         float fFatigueReturnMult = settings.find("fFatigueReturnMult")->getFloat ();
         float fEndFatigueMult = settings.find("fEndFatigueMult")->getFloat ();
@@ -506,7 +557,6 @@ namespace MWMechanics
         float x = fFatigueReturnBase + fFatigueReturnMult * (1 - normalizedEncumbrance);
         x *= fEndFatigueMult * endurance;
 
-        DynamicStat<float> fatigue = stats.getFatigue();
         fatigue.setCurrent (fatigue.getCurrent() + 3600 * x);
         stats.setFatigue (fatigue);
     }
@@ -518,6 +568,11 @@ namespace MWMechanics
 
         MWMechanics::CreatureStats& stats = ptr.getClass().getCreatureStats (ptr);
 
+        DynamicStat<float> fatigue = stats.getFatigue();
+
+        if (fatigue.getCurrent() >= fatigue.getModified())
+            return;
+
         int endurance = stats.getAttribute (ESM::Attribute::Endurance).getModified ();
 
         // restore fatigue
@@ -527,34 +582,50 @@ namespace MWMechanics
 
         float x = fFatigueReturnBase + fFatigueReturnMult * endurance;
 
-        DynamicStat<float> fatigue = stats.getFatigue();
         fatigue.setCurrent (fatigue.getCurrent() + duration * x);
         stats.setFatigue (fatigue);
     }
 
-    class ExpiryVisitor : public EffectSourceVisitor
+    class SortByRemainingTimeVisitor : public EffectSourceVisitor
     {
-        private:
-            MWWorld::Ptr mActor;
-            float mDuration;
-
         public:
-            ExpiryVisitor(const MWWorld::Ptr& actor, float duration)
-                : mActor(actor), mDuration(duration)
+        struct Effect
+        {
+            float mMagnitude;
+            float mRemainingTime;
+            MWMechanics::EffectKey mKey;
+
+            Effect(float magnitude, float remainingTime, MWMechanics::EffectKey key)
+                : mMagnitude(magnitude), mRemainingTime (remainingTime), mKey (key)
             {
             }
 
-            virtual void visit (MWMechanics::EffectKey key,
-                                const std::string& /*sourceName*/, const std::string& /*sourceId*/, int /*casterActorId*/,
-                                float magnitude, float remainingTime = -1, float /*totalTime*/ = -1)
+            bool operator < (const Effect& str) const
             {
-                if (magnitude > 0 && remainingTime > 0 && remainingTime < mDuration)
-                {
-                    CreatureStats& creatureStats = mActor.getClass().getCreatureStats(mActor);
-                    if (effectTick(creatureStats, mActor, key, magnitude * remainingTime))
-                        creatureStats.getMagicEffects().add(key, -magnitude);
-                }
+                return (mRemainingTime < str.mRemainingTime);
             }
+        };
+
+        std::vector<Effect> mEffectsByRemainingTime;
+
+        SortByRemainingTimeVisitor(bool /*unused*/)
+        {
+        }
+
+        virtual ~SortByRemainingTimeVisitor() { }
+
+        virtual void visit (MWMechanics::EffectKey key,
+                const std::string& /*sourceName*/, const std::string& /*sourceId*/, int /*casterActorId*/,
+                float magnitude, float remainingTime = -1, float /*totalTime*/ = -1)
+        {
+            Effect effect(magnitude, remainingTime, key);
+            mEffectsByRemainingTime.push_back(effect);
+        }
+
+        void sort()
+        {
+            std::sort(mEffectsByRemainingTime.begin(), mEffectsByRemainingTime.end());
+        }
     };
 
     void Actors::calculateCreatureStatModifiers (const MWWorld::Ptr& ptr, float duration)
@@ -562,7 +633,7 @@ namespace MWMechanics
         CreatureStats &creatureStats = ptr.getClass().getCreatureStats(ptr);
         const MagicEffects &effects = creatureStats.getMagicEffects();
 
-        bool wasDead = creatureStats.isDead();
+        const bool wasDead = creatureStats.isDead();
 
         if (duration > 0)
         {
@@ -570,15 +641,32 @@ namespace MWMechanics
             // in case duration > remaining time of effect.
             // One case where this will happen is when the player uses the rest/wait command
             // while there is a tickable effect active that should expire before the end of the rest/wait.
-            ExpiryVisitor visitor(ptr, duration);
-            creatureStats.getActiveSpells().visitEffectSources(visitor);
+
+            // Sort effects by remaining time, so effects that should end first will be applied first
+            SortByRemainingTimeVisitor sorter(true);
+            creatureStats.getActiveSpells().visitEffectSources(sorter);
+            sorter.sort();
+
+            // Apply the expiring effects for their remaining time if it is shorter than the duration variable
+            for (std::vector<SortByRemainingTimeVisitor::Effect>::const_iterator iter = sorter.mEffectsByRemainingTime.begin(); iter != sorter.mEffectsByRemainingTime.end(); iter++)
+            {
+                if (iter->mMagnitude > 0 && iter->mRemainingTime > 0 && iter->mRemainingTime < duration)
+                {
+                    if (effectTick(creatureStats, ptr, iter->mKey, iter->mMagnitude * iter->mRemainingTime))
+                        creatureStats.getMagicEffects().add(iter->mKey, -(iter->mMagnitude));
+                    if (applyInstantEffectWithDuration(ptr, iter->mKey, -(iter->mMagnitude)))
+                        creatureStats.getMagicEffects().add(iter->mKey, -(iter->mMagnitude));
+                }
+                if (creatureStats.needToRecalcDynamicStats())
+                    calculateDynamicStats(ptr);
+            }
 
             for (MagicEffects::Collection::const_iterator it = effects.begin(); it != effects.end(); ++it)
             {
-                // tickable effects (i.e. effects having a lasting impact after expiry)
+                // Apply tickable effects that are not expiring yet
                 effectTick(creatureStats, ptr, it->first, it->second.getMagnitude() * duration);
 
-                // instant effects are already applied on spell impact in spellcasting.cpp, but may also come from permanent abilities
+                // Instant effects are already applied on spell impact in spellcasting.cpp, but may also come from permanent abilities
                 if (it->second.getMagnitude() > 0)
                 {
                     CastSpell cast(ptr, ptr);
@@ -591,17 +679,6 @@ namespace MWMechanics
                     }
                 }
             }
-        }
-
-        // attributes
-        for(int i = 0;i < ESM::Attribute::Length;++i)
-        {
-            AttributeValue stat = creatureStats.getAttribute(i);
-            stat.setModifier(static_cast<int>(effects.get(EffectKey(ESM::MagicEffect::FortifyAttribute, i)).getMagnitude() -
-                             effects.get(EffectKey(ESM::MagicEffect::DrainAttribute, i)).getMagnitude() -
-                             effects.get(EffectKey(ESM::MagicEffect::AbsorbAttribute, i)).getMagnitude()));
-
-            creatureStats.setAttribute(i, stat);
         }
 
         if (creatureStats.needToRecalcDynamicStats())
@@ -622,19 +699,6 @@ namespace MWMechanics
                     }
                 }
             }
-        }
-
-        // dynamic stats
-        for(int i = 0;i < 3;++i)
-        {
-            DynamicStat<float> stat = creatureStats.getDynamic(i);
-            stat.setModifier(effects.get(ESM::MagicEffect::FortifyHealth+i).getMagnitude() -
-                             effects.get(ESM::MagicEffect::DrainHealth+i).getMagnitude(),
-                             // Magicka can be decreased below zero due to a fortify effect wearing off
-                             // Fatigue can be decreased below zero meaning the actor will be knocked out
-                             i == 1 || i == 2);
-
-            creatureStats.setDynamic(i, stat);
         }
 
         // AI setting modifiers
@@ -774,21 +838,6 @@ namespace MWMechanics
             if (ptr.getClass().hasInventoryStore(ptr))
                 ptr.getClass().getInventoryStore(ptr).visitEffectSources(updateSummonedCreatures);
             updateSummonedCreatures.process();
-        }
-    }
-
-    void Actors::calculateNpcStatModifiers (const MWWorld::Ptr& ptr, float duration)
-    {
-        NpcStats &npcStats = ptr.getClass().getNpcStats(ptr);
-        const MagicEffects &effects = npcStats.getMagicEffects();
-
-        // skills
-        for(int i = 0;i < ESM::Skill::Length;++i)
-        {
-            SkillValue& skill = npcStats.getSkill(i);
-            skill.setModifier(static_cast<int>(effects.get(EffectKey(ESM::MagicEffect::FortifySkill, i)).getMagnitude() -
-                             effects.get(EffectKey(ESM::MagicEffect::DrainSkill, i)).getMagnitude() -
-                             effects.get(EffectKey(ESM::MagicEffect::AbsorbSkill, i)).getMagnitude()));
         }
     }
 
@@ -1429,8 +1478,6 @@ namespace MWMechanics
                 calculateDynamicStats (iter->first);
 
             calculateCreatureStatModifiers (iter->first, duration);
-            if (iter->first.getClass().isNpc())
-                calculateNpcStatModifiers(iter->first, duration);
         }
 
         fastForwardAi();
@@ -1696,8 +1743,6 @@ namespace MWMechanics
     {
         adjustMagicEffects(ptr);
         calculateCreatureStatModifiers(ptr, 0.f);
-        if (ptr.getClass().isNpc())
-            calculateNpcStatModifiers(ptr, 0.f);
     }
 
     bool Actors::isReadyToBlock(const MWWorld::Ptr &ptr) const

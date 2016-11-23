@@ -20,7 +20,7 @@ namespace MWMechanics
         : mDrawState (DrawState_Nothing), mDead (false), mDeathAnimationFinished(false), mDied (false), mMurdered(false), mFriendlyHits (0),
           mTalkedTo (false), mAlarmed (false), mAttacked (false),
           mKnockdown(false), mKnockdownOneFrame(false), mKnockdownOverOneFrame(false),
-          mHitRecovery(false), mBlock(false), mMovementFlags(0),
+          mHitRecovery(false), mBlock(false), mMovementFlags(0), mOnLoadGame(false),
           mFallHeight(0), mRecalcMagicka(false), mLastRestock(0,0), mGoldPool(0), mActorId(-1), mHitAttemptActorId(-1),
           mDeathAnimation(-1), mTimeOfDeath(), mLevel (0)
     {
@@ -209,10 +209,6 @@ namespace MWMechanics
 
     void CreatureStats::modifyMagicEffects(const MagicEffects &effects)
     {
-        if (effects.get(ESM::MagicEffect::FortifyMaximumMagicka).getModifier()
-                != mMagicEffects.get(ESM::MagicEffect::FortifyMaximumMagicka).getModifier())
-            mRecalcMagicka = true;
-
         mMagicEffects.setModifiers(effects);
     }
 
@@ -457,6 +453,16 @@ namespace MWMechanics
         return mBlock;
     }
 
+    void CreatureStats::setOnLoadGame(bool value)
+    {
+        mOnLoadGame = value;
+    }
+
+    bool CreatureStats::getOnLoadGame() const
+    {
+        return mOnLoadGame;
+    }
+
     bool CreatureStats::getMovementFlag (Flag flag) const
     {
         return (mMovementFlags & flag) != 0;
@@ -586,6 +592,7 @@ namespace MWMechanics
         mActiveSpells.readState(state.mActiveSpells);
         mAiSequence.readState(state.mAiSequence);
         mMagicEffects.readState(state.mMagicEffects);
+        mOnLoadGame = true;
 
         mSummonedCreatures = state.mSummonedCreatureMap;
         mSummonGraveyard = state.mSummonGraveyard;

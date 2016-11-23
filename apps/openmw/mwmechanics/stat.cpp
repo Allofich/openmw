@@ -74,7 +74,11 @@ namespace MWMechanics
     void Stat<T>::readState (const ESM::StatState<T>& state)
     {
         mBase = state.mBase;
-        mModified = state.mMod;
+        // Only magicka should be able to have a modified value different from the base value, when
+        // there is a fortify maximum magicka effect active. The magicka modified value will be recalculated
+        // if that effect is active. Setting mModified to mBase here will repair saves from older versions
+        // that changed the modified values.
+        mModified = state.mBase;
     }
 
 
@@ -127,14 +131,18 @@ namespace MWMechanics
             mCurrent = getModified();
     }
     template<typename T>
-    void DynamicStat<T>::setCurrent (const T& value, bool allowDecreaseBelowZero)
+    void DynamicStat<T>::setCurrent (const T& value, bool allowDecreaseBelowZero, bool allowIncreaseAboveModified)
     {
         if (value > mCurrent)
         {
             // increase
-            mCurrent = value;
-
-            if (mCurrent > getModified())
+            if (value <= getModified() || allowIncreaseAboveModified)
+                mCurrent = value;
+            // if increase above modified is not allowed, and current is already above modified, do nothing
+            else if (mCurrent > getModified())
+                return;
+            // otherwise, only go as high as modified
+            else if (value > getModified())
                 mCurrent = getModified();
         }
         else if (value > 0 || allowDecreaseBelowZero)
@@ -170,19 +178,19 @@ namespace MWMechanics
     }
 
     AttributeValue::AttributeValue() :
-        mBase(0), mModifier(0), mDamage(0)
+        mBase(0), mModifier(0.f), mDamage(0.f)
     {
     }
 
     int AttributeValue::getModified() const
     {
-        return std::max(0, mBase - (int) mDamage + mModifier);
+        return std::max(0, static_cast<int>(mBase - mDamage + mModifier));
     }
     int AttributeValue::getBase() const
     {
         return mBase;
     }
-    int AttributeValue::getModifier() const
+    float AttributeValue::getModifier() const
     {
         return mModifier;
     }
@@ -192,17 +200,19 @@ namespace MWMechanics
         mBase = base;
     }
 
-    void AttributeValue::setModifier(int mod)
+    void AttributeValue::setModifier(float mod)
     {
         mModifier = mod;
     }
 
     void AttributeValue::damage(float damage)
     {
-        mDamage += std::min(damage, (float)getModified());
+        mDamage += std::min(damage, static_cast<float>(getModified()));
     }
     void AttributeValue::restore(float amount)
     {
+        if ((mModifier < 0) && (amount > mDamage))
+            mModifier += std::min(-mModifier, amount - mDamage);
         mDamage -= std::min(mDamage, amount);
     }
 
@@ -214,14 +224,14 @@ namespace MWMechanics
     void AttributeValue::writeState (ESM::StatState<int>& state) const
     {
         state.mBase = mBase;
-        state.mMod = mModifier;
+        state.mMod = static_cast<int>(mModifier);
         state.mDamage = mDamage;
     }
 
     void AttributeValue::readState (const ESM::StatState<int>& state)
     {
         mBase = state.mBase;
-        mModifier = state.mMod;
+        mModifier = static_cast<float>(state.mMod);
         mDamage = state.mDamage;
     }
 

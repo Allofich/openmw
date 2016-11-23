@@ -47,6 +47,7 @@ namespace MWMechanics
         bool mHitRecovery;
         bool mBlock;
         unsigned int mMovementFlags;
+        bool mOnLoadGame;
 
         float mFallHeight;
 
@@ -218,6 +219,9 @@ namespace MWMechanics
         bool getHitRecovery() const;
         void setBlock(bool value);
         bool getBlock() const;
+
+        void setOnLoadGame(bool value);
+        bool getOnLoadGame() const;
 
         std::map<SummonKey, int>& getSummonedCreatureMap(); // <SummonKey, ActorId of summoned creature>
         std::vector<int>& getSummonedCreatureGraveyard(); // ActorIds

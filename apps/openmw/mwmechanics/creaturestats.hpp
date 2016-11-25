@@ -137,7 +137,7 @@ namespace MWMechanics
         void setDynamic (int index, const DynamicStat<float> &value);
 
         /// Set Modifier for each magic effect according to \a effects. Does not touch Base values.
-        void modifyMagicEffects(const MagicEffects &effects, bool allowMagickaRecalc = true);
+        void modifyMagicEffects(const MagicEffects &effects);
 
         void setAttackingOrSpell(bool attackingOrSpell);
 

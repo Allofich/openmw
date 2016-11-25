@@ -207,13 +207,8 @@ namespace MWMechanics
         mLevel = level;
     }
 
-    void CreatureStats::modifyMagicEffects(const MagicEffects &effects, bool allowMagickaRecalc)
+    void CreatureStats::modifyMagicEffects(const MagicEffects &effects)
     {
-        if (effects.get(ESM::MagicEffect::FortifyMaximumMagicka).getModifier()
-                != mMagicEffects.get(ESM::MagicEffect::FortifyMaximumMagicka).getModifier()
-                && allowMagickaRecalc)
-            mRecalcMagicka = true;
-
         mMagicEffects.setModifiers(effects);
     }
 

@@ -446,7 +446,7 @@ namespace MWMechanics
 
         if (creatureStats.getOnLoadGame())  // Need to let effects update once on loading a game, so skip comparing
         {
-            creatureStats.modifyMagicEffects(now, false); // Don't allow magicka recalculating or fortified magicka from save will be lost
+            creatureStats.modifyMagicEffects(now);
             return;
         }
  
@@ -468,7 +468,12 @@ namespace MWMechanics
 
             if (diff)
                 cast.applyInstantEffectWithDuration(creature, creature, ESM::MagicEffect::FortifyHealth + i, diff);          
-        }         
+        }
+
+        if (now.get(ESM::MagicEffect::FortifyMaximumMagicka).getModifier()
+                != creatureStats.getMagicEffects().get(ESM::MagicEffect::FortifyMaximumMagicka).getModifier())
+            creatureStats.setNeedRecalcDynamicStats(true);
+
         creatureStats.modifyMagicEffects(now);
     }
 

@@ -444,30 +444,34 @@ namespace MWMechanics
 
         now += creatureStats.getActiveSpells().getMagicEffects();
 
-        if (creatureStats.getOnLoadGame())  // Need to let effects update once on loading a game, so skip comparing
+        // If we just loaded a saved game, magic effects need to update once to get to their
+        // to their pre-save magnitudes, so exit without comparing.
+        if (creatureStats.getOnLoadGame())                                                  
         {
             creatureStats.modifyMagicEffects(now);
             return;
         }
  
-        // Apply changes to health, magicka and fatigue drain and fortify effects
-        // if they began, ended or otherwise changed
-        float diff;
+        // Need to collect any effects that are in one MagicEffects list but not the other
+        MagicEffects diffEffects = now.diff(creatureStats.getMagicEffects(), now);
+        MagicEffects merged = now;
+        for (MagicEffects::Collection::const_iterator it = diffEffects.begin();
+            it != diffEffects.end(); ++it)
+        {
+            merged.add(it->first,it->second);
+        }
+
+        // Apply instant magic effects that have duration (drain and fortify)
+        // if the modifier changed. This includes when the effect starts or ends.
+        float diff = 0;
         MWMechanics::CastSpell cast(creature, creature);
 
-        for(int i = 0;i < 3;++i)
+        for (MagicEffects::Collection::const_iterator it = merged.begin();
+            it != merged.end(); ++it)
         {
-            diff = now.get(ESM::MagicEffect::DrainHealth + i).getModifier() -
-                creatureStats.getMagicEffects().get(ESM::MagicEffect::DrainHealth + i).getModifier();
-
+            diff = now.get(it->first).getModifier() - creatureStats.getMagicEffects().get(it->first).getModifier();
             if (diff)
-                cast.applyInstantEffectWithDuration(creature, creature, ESM::MagicEffect::DrainHealth + i, diff);
-
-            diff = now.get(ESM::MagicEffect::FortifyHealth + i).getModifier() -
-                creatureStats.getMagicEffects().get(ESM::MagicEffect::FortifyHealth + i).getModifier();
-
-            if (diff)
-                cast.applyInstantEffectWithDuration(creature, creature, ESM::MagicEffect::FortifyHealth + i, diff);          
+                cast.applyInstantEffectWithDuration(creature, creature, it->first, diff);
         }
 
         if (now.get(ESM::MagicEffect::FortifyMaximumMagicka).getModifier()

@@ -84,7 +84,7 @@ namespace MWMechanics
             /// Set modified value an adjust base accordingly.
             void setModified (T value, const T& min, const T& max = std::numeric_limits<T>::max());
 
-            void setCurrent (const T& value, bool allowDecreaseBelowZero = false, bool allowIncreaseAboveMaximum = false);
+            void setCurrent (const T& value, bool allowDecreaseBelowZero = false, bool allowIncreaseAboveModified = false);
             void setModifier (const T& modifier, bool allowCurrentDecreaseBelowZero=false);
 
             void writeState (ESM::StatState<T>& state) const;

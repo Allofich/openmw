@@ -127,14 +127,18 @@ namespace MWMechanics
             mCurrent = getModified();
     }
     template<typename T>
-    void DynamicStat<T>::setCurrent (const T& value, bool allowDecreaseBelowZero, bool allowIncreaseAboveMaximum)
+    void DynamicStat<T>::setCurrent (const T& value, bool allowDecreaseBelowZero, bool allowIncreaseAboveModified)
     {
         if (value > mCurrent)
         {
             // increase
-            mCurrent = value;
-
-            if (mCurrent > getModified() && !allowIncreaseAboveMaximum)
+            if (value <= getModified() || allowIncreaseAboveModified)
+                mCurrent = value;
+            // if increase above modified is not allowed, and current is already above modified, do nothing
+            else if (mCurrent > getModified())
+                return;
+            // otherwise, only go as high as modified
+            else if (value > getModified())
                 mCurrent = getModified();
         }
         else if (value > 0 || allowDecreaseBelowZero)

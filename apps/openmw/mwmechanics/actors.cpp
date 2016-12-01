@@ -444,7 +444,7 @@ namespace MWMechanics
 
         now += creatureStats.getActiveSpells().getMagicEffects();
 
-        // If we just loaded a saved game, magic effects need to update once to get to their
+        // If we just loaded a saved game, magic effects need to update once to get
         // to their pre-save magnitudes, so exit without comparing.
         if (creatureStats.getOnLoadGame())                                                  
         {

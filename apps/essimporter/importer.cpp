@@ -160,48 +160,75 @@ namespace ESSImport
         File file2;
         read(mOutFile, file2); // todo rename variable
 
-        // FIXME: use max(size1, size2)
-        for (unsigned int i=0; i<file1.mRecords.size(); ++i)
+        unsigned int max = std::max(file1.mRecords.size(), file2.mRecords.size());
+
+        for (unsigned int i=0; i<max; ++i)
         {
-            File::Record rec = file1.mRecords[i];
+            File::Record rec;
+            File::Record rec2;
 
             if (i >= file2.mRecords.size())
             {
+                rec = file1.mRecords[i];
                 std::ios::fmtflags f(std::cout.flags());
-                std::cout << "Record in file1 not present in file2: (1) 0x" << std::hex << rec.mFileOffset << std::endl;
+                std::cout << "Record in file1 " << rec.mName << " not present in file2: (1) 0x" << std::hex << rec.mFileOffset << std::endl;
                 std::cout.flags(f);
-                return;
+                continue;
             }
 
-            File::Record rec2 = file2.mRecords[i];
+            if (i >= file1.mRecords.size())
+            {
+                rec2 =  file2.mRecords[i];
+                std::ios::fmtflags f(std::cout.flags());
+                std::cout << "Record in file2 " << rec2.mName << " not present in file1: (2) 0x" << std::hex << rec2.mFileOffset << std::endl;
+                std::cout.flags(f);
+                continue;
+            }
+
+            rec = file1.mRecords[i];
+            rec2 = file2.mRecords[i];
 
             if (rec.mName != rec2.mName)
             {
                 std::ios::fmtflags f(std::cout.flags());
-                std::cout << "Different record name at (2) 0x" << std::hex << rec2.mFileOffset << std::endl;
+                std::cout << "Different record name (" << rec.mName << " vs. " << rec2.mName <<  ") at (1) 0x" << std::hex << rec.mFileOffset
+                          << " (2) 0x" << rec2.mFileOffset << std::endl;
                 std::cout.flags(f);
-                return; // TODO: try to recover
+                continue; // TODO: try to recover
             }
 
-            // FIXME: use max(size1, size2)
-            for (unsigned int j=0; j<rec.mSubrecords.size(); ++j)
+            unsigned int max2 = std::max(rec.mSubrecords.size(), rec2.mSubrecords.size());
+
+            for (unsigned int j=0; j<max2; ++j)
             {
-                File::Subrecord sub = rec.mSubrecords[j];
+                File::Subrecord sub;
+                File::Subrecord sub2;
 
                 if (j >= rec2.mSubrecords.size())
                 {
+                    sub = rec.mSubrecords[j];
                     std::ios::fmtflags f(std::cout.flags());
-                    std::cout << "Subrecord in file1 not present in file2: (1) 0x" << std::hex << sub.mFileOffset << std::endl;
+                    std::cout << "Subrecord in file1 " << sub.mName << " not present in file2: (1) 0x" << std::hex << sub.mFileOffset << std::endl;
                     std::cout.flags(f);
-                    return;
+                    continue;
                 }
 
-                File::Subrecord sub2 = rec2.mSubrecords[j];
+                if (j >= rec.mSubrecords.size())
+                {
+                    sub2 = rec2.mSubrecords[j];
+                    std::ios::fmtflags f(std::cout.flags());
+                    std::cout << "Subrecord in file2 " << sub2.mName << " not present in file1: (2) 0x" << std::hex << sub2.mFileOffset << std::endl;
+                    std::cout.flags(f);
+                    continue;
+                }
+
+                sub = rec.mSubrecords[j];
+                sub2 = rec2.mSubrecords[j];
 
                 if (sub.mName != sub2.mName)
                 {
                     std::ios::fmtflags f(std::cout.flags());
-                    std::cout << "Different subrecord name (" << rec.mName << "." << sub.mName << " vs. " << sub2.mName << ") at (1) 0x" << std::hex << sub.mFileOffset
+                    std::cout << "Different subrecord name (" << rec.mName << "." << sub.mName << " vs. " << rec2.mName << "." << sub2.mName << ") at (1) 0x" << std::hex << sub.mFileOffset
                               << " (2) 0x" << sub2.mFileOffset << std::endl;
                     std::cout.flags(f);
                     break; // TODO: try to recover

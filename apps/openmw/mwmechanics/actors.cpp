@@ -425,7 +425,6 @@ namespace MWMechanics
     void Actors::updateNpc (const MWWorld::Ptr& ptr, float duration)
     {
         updateDrowning(ptr, duration);
-        calculateNpcStatModifiers(ptr, duration);
     }
 
     void Actors::adjustMagicEffects (const MWWorld::Ptr& creature)
@@ -474,6 +473,9 @@ namespace MWMechanics
             if (diff)
                 cast.applyInstantEffectWithDuration(creature, creature, it->first, diff);
         }
+
+        if (creatureStats.needToRecalcDynamicStats())
+            calculateDynamicStats(creature);
 
         if (now.get(ESM::MagicEffect::FortifyMaximumMagicka).getModifier()
                 != creatureStats.getMagicEffects().get(ESM::MagicEffect::FortifyMaximumMagicka).getModifier())
@@ -637,17 +639,6 @@ namespace MWMechanics
             }
         }
 
-        // attributes
-        for(int i = 0;i < ESM::Attribute::Length;++i)
-        {
-            AttributeValue stat = creatureStats.getAttribute(i);
-            stat.setModifier(static_cast<int>(effects.get(EffectKey(ESM::MagicEffect::FortifyAttribute, i)).getMagnitude() -
-                             effects.get(EffectKey(ESM::MagicEffect::DrainAttribute, i)).getMagnitude() -
-                             effects.get(EffectKey(ESM::MagicEffect::AbsorbAttribute, i)).getMagnitude()));
-
-            creatureStats.setAttribute(i, stat);
-        }
-
         if (creatureStats.needToRecalcDynamicStats())
             calculateDynamicStats(ptr);
 
@@ -805,21 +796,6 @@ namespace MWMechanics
             if (ptr.getClass().hasInventoryStore(ptr))
                 ptr.getClass().getInventoryStore(ptr).visitEffectSources(updateSummonedCreatures);
             updateSummonedCreatures.process();
-        }
-    }
-
-    void Actors::calculateNpcStatModifiers (const MWWorld::Ptr& ptr, float duration)
-    {
-        NpcStats &npcStats = ptr.getClass().getNpcStats(ptr);
-        const MagicEffects &effects = npcStats.getMagicEffects();
-
-        // skills
-        for(int i = 0;i < ESM::Skill::Length;++i)
-        {
-            SkillValue& skill = npcStats.getSkill(i);
-            skill.setModifier(static_cast<int>(effects.get(EffectKey(ESM::MagicEffect::FortifySkill, i)).getMagnitude() -
-                             effects.get(EffectKey(ESM::MagicEffect::DrainSkill, i)).getMagnitude() -
-                             effects.get(EffectKey(ESM::MagicEffect::AbsorbSkill, i)).getMagnitude()));
         }
     }
 
@@ -1460,8 +1436,6 @@ namespace MWMechanics
                 calculateDynamicStats (iter->first);
 
             calculateCreatureStatModifiers (iter->first, duration);
-            if (iter->first.getClass().isNpc())
-                calculateNpcStatModifiers(iter->first, duration);
         }
 
         fastForwardAi();
@@ -1727,8 +1701,6 @@ namespace MWMechanics
     {
         adjustMagicEffects(ptr);
         calculateCreatureStatModifiers(ptr, 0.f);
-        if (ptr.getClass().isNpc())
-            calculateNpcStatModifiers(ptr, 0.f);
     }
 
     bool Actors::isReadyToBlock(const MWWorld::Ptr &ptr) const

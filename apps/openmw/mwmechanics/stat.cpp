@@ -178,19 +178,19 @@ namespace MWMechanics
     }
 
     AttributeValue::AttributeValue() :
-        mBase(0), mModifier(0), mDamage(0)
+        mBase(0), mModifier(0.f), mDamage(0.f)
     {
     }
 
     int AttributeValue::getModified() const
     {
-        return std::max(0, mBase - (int) mDamage + mModifier);
+        return std::max(0, static_cast<int>(mBase - mDamage + mModifier));
     }
     int AttributeValue::getBase() const
     {
         return mBase;
     }
-    int AttributeValue::getModifier() const
+    float AttributeValue::getModifier() const
     {
         return mModifier;
     }
@@ -200,17 +200,19 @@ namespace MWMechanics
         mBase = std::max(0, base);
     }
 
-    void AttributeValue::setModifier(int mod)
+    void AttributeValue::setModifier(float mod)
     {
         mModifier = mod;
     }
 
     void AttributeValue::damage(float damage)
     {
-        mDamage += std::min(damage, (float)getModified());
+        mDamage += std::min(damage, static_cast<float>(getModified()));
     }
     void AttributeValue::restore(float amount)
     {
+        if ((mModifier < 0) && (amount > mDamage))
+            mModifier += std::min(-mModifier, amount - mDamage);
         mDamage -= std::min(mDamage, amount);
     }
 

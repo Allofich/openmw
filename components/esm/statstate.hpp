@@ -12,7 +12,7 @@ namespace ESM
     struct StatState
     {
         T mBase;
-        T mMod; // Note: can either be the modifier, or the modified value.
+        float mMod; // Note: can either be the modifier, or the modified value.
                 // A bit inconsistent, but we can't fix this without breaking compatibility.
         T mCurrent;
         float mDamage;

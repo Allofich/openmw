@@ -13,8 +13,13 @@ namespace ESM
     {
         esm.getHNT(mBase, "STBA");
 
-        mMod = 0;
-        esm.getHNOT(mMod, "STMO");
+        // mMod was changed to a float; ensure backwards compatibility
+        T oldMod = 0;
+        esm.getHNOT(oldMod, "STMO");
+        mMod = static_cast<float>(oldMod);
+        
+        esm.getHNOT(mMod, "STMF");
+        
         mCurrent = 0;
         esm.getHNOT(mCurrent, "STCU");
 
@@ -35,7 +40,7 @@ namespace ESM
         esm.writeHNT("STBA", mBase);
 
         if (mMod != 0)
-            esm.writeHNT("STMO", mMod);
+            esm.writeHNT("STMF", mMod);
 
         if (mCurrent)
             esm.writeHNT("STCU", mCurrent);

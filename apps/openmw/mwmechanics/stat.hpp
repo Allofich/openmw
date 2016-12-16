@@ -108,7 +108,7 @@ namespace MWMechanics
     class AttributeValue
     {
         int mBase;
-        int mModifier;
+        float mModifier;
         float mDamage; // needs to be float to allow continuous damage
 
     public:
@@ -116,11 +116,11 @@ namespace MWMechanics
 
         int getModified() const;
         int getBase() const;
-        int getModifier() const;
+        float getModifier() const;
 
         void setBase(int base);
 
-        void setModifier(int mod);
+        void setModifier(float mod);
 
         // Maximum attribute damage is limited to the modified value.
         // Note: I think MW applies damage directly to mModified, since you can also

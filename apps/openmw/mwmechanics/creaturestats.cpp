@@ -453,15 +453,14 @@ namespace MWMechanics
         return mBlock;
     }
 
+    void CreatureStats::setOnLoadGame(bool value)
+    {
+        mOnLoadGame = value;
+    }
+
     bool CreatureStats::getOnLoadGame()
     {
-        if (mOnLoadGame)
-        {
-            mOnLoadGame = false;
-            return true;
-        }
-        else
-            return false;
+        return mOnLoadGame;
     }
 
     bool CreatureStats::getMovementFlag (Flag flag) const

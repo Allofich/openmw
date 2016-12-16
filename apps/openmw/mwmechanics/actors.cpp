@@ -446,12 +446,13 @@ namespace MWMechanics
 
         // If we just loaded a saved game, magic effects need to update once to get
         // to their pre-save magnitudes, so exit without comparing.
-        if (creatureStats.getOnLoadGame())                                                  
+        if (creatureStats.getOnLoadGame())
         {
             creatureStats.modifyMagicEffects(now);
+            creatureStats.setOnLoadGame(false);
             return;
         }
- 
+
         // Need to collect any effects that are in one MagicEffects list but not the other
         MagicEffects diffEffects = now.diff(creatureStats.getMagicEffects(), now);
         MagicEffects merged = now;

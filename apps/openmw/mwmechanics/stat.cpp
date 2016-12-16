@@ -68,13 +68,17 @@ namespace MWMechanics
     void Stat<T>::writeState (ESM::StatState<T>& state) const
     {
         state.mBase = mBase;
-        state.mMod = mModified;
+        state.mMod = mModified; // No longer being used.
     }
     template<typename T>
     void Stat<T>::readState (const ESM::StatState<T>& state)
     {
         mBase = state.mBase;
-        mModified = state.mMod;
+        // Only magicka should be able to have a modified value different from the base value, when
+        // there is a fortify maximum magicka effect active. The magicka modified value will be recalculated
+        // if that effect is active. Setting mModified to mBase here will repair saves from older versions
+        // that changed the modified values.
+        mModified = state.mBase;
     }
 
 

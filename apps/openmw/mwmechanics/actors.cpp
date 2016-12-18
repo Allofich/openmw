@@ -464,14 +464,13 @@ namespace MWMechanics
         // Apply instant magic effects that have duration (drain and fortify)
         // if the modifier changed. This includes when the effect starts or ends.
         float diff = 0;
-        MWMechanics::CastSpell cast(creature, creature);
 
         for (MagicEffects::Collection::const_iterator it = merged.begin();
             it != merged.end(); ++it)
         {
             diff = now.get(it->first).getModifier() - creatureStats.getMagicEffects().get(it->first).getModifier();
             if (diff)
-                cast.applyInstantEffectWithDuration(creature, creature, it->first, diff);
+                applyInstantEffectWithDuration(creature, it->first, diff);
         }
 
         if (creatureStats.needToRecalcDynamicStats())
@@ -578,15 +577,34 @@ namespace MWMechanics
         stats.setFatigue (fatigue);
     }
 
-    class ExpiryVisitor : public EffectSourceVisitor
+    struct effectStruct
     {
-        private:
-            MWWorld::Ptr mActor;
-            float mDuration;
+        float mMagnitude;
+        float mRemainingTime;
+        MWMechanics::EffectKey mKey;
 
-        public:
-            ExpiryVisitor(const MWWorld::Ptr& actor, float duration)
-                : mActor(actor), mDuration(duration)
+        effectStruct(float magnitude, float remainingTime, MWMechanics::EffectKey key)
+            : mMagnitude(magnitude), mRemainingTime (remainingTime), mKey (key)
+        {
+        }
+
+        bool operator < (const effectStruct& str) const
+        {
+        return (mRemainingTime < str.mRemainingTime);
+        }
+
+    };
+
+    class SortByRemainingTimeVisitor : public EffectSourceVisitor
+    {
+            private:
+            bool dummy;
+
+            public:
+            std::vector<effectStruct> mEffectsByRemainingTime;
+
+            SortByRemainingTimeVisitor(bool init)
+                : dummy(init)
             {
             }
 
@@ -594,12 +612,9 @@ namespace MWMechanics
                                 const std::string& /*sourceName*/, const std::string& /*sourceId*/, int /*casterActorId*/,
                                 float magnitude, float remainingTime = -1, float /*totalTime*/ = -1)
             {
-                if (magnitude > 0 && remainingTime > 0 && remainingTime < mDuration)
-                {
-                    CreatureStats& creatureStats = mActor.getClass().getCreatureStats(mActor);
-                    if (effectTick(creatureStats, mActor, key, magnitude * remainingTime))
-                        creatureStats.getMagicEffects().add(key, -magnitude);
-                }
+                effectStruct effect(magnitude, remainingTime, key);
+                mEffectsByRemainingTime.push_back(effect);
+                dummy = true;
             }
     };
 
@@ -616,15 +631,32 @@ namespace MWMechanics
             // in case duration > remaining time of effect.
             // One case where this will happen is when the player uses the rest/wait command
             // while there is a tickable effect active that should expire before the end of the rest/wait.
-            ExpiryVisitor visitor(ptr, duration);
-            creatureStats.getActiveSpells().visitEffectSources(visitor);
+
+            // Sort effects by remaining time, so effects that should end first will be applied first
+            SortByRemainingTimeVisitor sorter(true);
+            creatureStats.getActiveSpells().visitEffectSources(sorter);
+            std::sort(sorter.mEffectsByRemainingTime.begin(), sorter.mEffectsByRemainingTime.end());
+
+            // Apply the expiring effects for their remaining time if it is shorter than the duration variable
+            for (std::vector<effectStruct>::const_iterator iter = sorter.mEffectsByRemainingTime.begin(); iter != sorter.mEffectsByRemainingTime.end(); iter++)
+            {
+                if (iter->mMagnitude > 0 && iter->mRemainingTime > 0 && iter->mRemainingTime < duration)
+                {
+                    if (effectTick(creatureStats, ptr, iter->mKey, iter->mMagnitude * iter->mRemainingTime))
+                        creatureStats.getMagicEffects().add(iter->mKey, -(iter->mMagnitude));
+                    if (applyInstantEffectWithDuration(ptr, iter->mKey, -(iter->mMagnitude)))
+                        creatureStats.getMagicEffects().add(iter->mKey, -(iter->mMagnitude));
+                }
+                if (creatureStats.needToRecalcDynamicStats())
+                    calculateDynamicStats(ptr);
+            }
 
             for (MagicEffects::Collection::const_iterator it = effects.begin(); it != effects.end(); ++it)
             {
-                // tickable effects (i.e. effects having a lasting impact after expiry)
+                // Apply tickable effects that are not expiring yet
                 effectTick(creatureStats, ptr, it->first, it->second.getMagnitude() * duration);
 
-                // instant effects are already applied on spell impact in spellcasting.cpp, but may also come from permanent abilities
+                // Instant effects are already applied on spell impact in spellcasting.cpp, but may also come from permanent abilities
                 if (it->second.getMagnitude() > 0)
                 {
                     CastSpell cast(ptr, ptr);

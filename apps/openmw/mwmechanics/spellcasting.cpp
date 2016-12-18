@@ -678,69 +678,6 @@ namespace MWMechanics
         return false;
     }
 
-    void CastSpell::applyInstantEffectWithDuration (const MWWorld::Ptr& target, const MWWorld::Ptr& caster, const MWMechanics::EffectKey& effect, float magnitude)
-    {
-        short effectId = effect.mId;
-        short effectArg = effect.mArg;
-        MWMechanics::CreatureStats& stats = target.getClass().getCreatureStats(target);
-
-        // health, magicka and fatigue
-        for(int i = 0;i < 3;++i)
-        {
-            DynamicStat<float> stat = stats.getDynamic(i);
-            if (effectId == ESM::MagicEffect::DrainHealth + i)
-                stat.setCurrent(stat.getCurrent() - magnitude, true);
-            else if (effectId == ESM::MagicEffect::FortifyHealth + i)
-                stat.setCurrent(stat.getCurrent() + magnitude, true, true);
-            stats.setDynamic(i,stat);
-        }
-
-        // attributes
-        for(int i = 0;i < ESM::Attribute::Length;++i)
-        {
-            AttributeValue stat = stats.getAttribute(i);
-            if ((effectId == ESM::MagicEffect::DrainAttribute && effectArg == i) || (effectId == ESM::MagicEffect::AbsorbAttribute && effectArg == i))
-            {
-                if (magnitude < 0) // if magnitude is negative it means the drain effect is ending or was removed
-                {
-                    if (stat.getModifier() > 0) // if we have a positive modifier, do nothing
-                        continue;
-                    else
-                        stat.setModifier(std::min(stat.getModifier() - magnitude, 0.f)); // otherwise cap the modifier at 0
-                }
-                else
-                    stat.setModifier(stat.getModifier() - magnitude);
-            }
-            else if (effectId == ESM::MagicEffect::FortifyAttribute && effectArg == i)
-                stat.setModifier(stat.getModifier() + magnitude);
-            stats.setAttribute(i, stat);
-        }
-
-        // skills
-        if (target.getClass().isNpc())
-        {          
-            for(int i = 0;i < ESM::Skill::Length;++i)
-            {
-                NpcStats &npcStats = target.getClass().getNpcStats(target);
-                SkillValue& skill = npcStats.getSkill(i);
-                if ((effectId == ESM::MagicEffect::DrainSkill && effectArg == i) || (effectId == ESM::MagicEffect::AbsorbSkill && effectArg == i))
-                {
-                    if (magnitude < 0) // if magnitude is negative it means the drain effect is ending or was removed
-                    {
-                        if (skill.getModifier() > 0) // if we have a positive modifier, do nothing
-                            continue;
-                    else
-                        skill.setModifier(std::min(skill.getModifier() - magnitude, 0.f)); // otherwise cap the modifier at 0
-                }
-                else
-                    skill.setModifier(skill.getModifier() - magnitude);
-                }
-                else if (effectId == ESM::MagicEffect::FortifySkill && effectArg == i)
-                    skill.setModifier(skill.getModifier() + magnitude);
-            }
-        }
-    }
-
     bool CastSpell::cast(const std::string &id)
     {
         if (const ESM::Spell *spell =
@@ -1272,6 +1209,107 @@ namespace MWMechanics
             return std::string();
         else
             return MWBase::Environment::get().getWorld()->getStore().get<ESM::GameSetting>().find(it->second)->getString();
+    }
+
+    bool applyInstantEffectWithDuration (const MWWorld::Ptr& target, const MWMechanics::EffectKey& effect, float magnitude)
+    {
+        if (magnitude == 0.f)
+            return false;
+
+        short effectId = effect.mId;
+        short effectArg = effect.mArg;
+        MWMechanics::CreatureStats& stats = target.getClass().getCreatureStats(target);
+
+        // health, magicka and fatigue
+        for(int i = 0;i < 3;++i)
+        {
+            DynamicStat<float> stat = stats.getDynamic(i);
+            if (effectId == ESM::MagicEffect::DrainHealth + i)
+            {
+                stat.setCurrent(stat.getCurrent() - magnitude, true);
+                stats.setDynamic(i,stat);
+                return true;
+            }
+            else if (effectId == ESM::MagicEffect::FortifyHealth + i)
+            {
+                stat.setCurrent(stat.getCurrent() + magnitude, true, true);
+                stats.setDynamic(i,stat);
+                return true;
+            }
+        }
+
+        // attributes
+        for(int i = 0;i < ESM::Attribute::Length;++i)
+        {
+            AttributeValue stat = stats.getAttribute(i);
+            if ((effectId == ESM::MagicEffect::DrainAttribute && effectArg == i) || (effectId == ESM::MagicEffect::AbsorbAttribute && effectArg == i))
+            {
+                if (magnitude < 0) // if magnitude is negative it means the drain effect is ending or was removed
+                {
+                    if (stat.getModifier() > 0) // if we have a positive modifier, do nothing
+                        continue;
+                    else
+                    {
+                        stat.setModifier(std::min(stat.getModifier() - magnitude, 0.f)); // otherwise cap the modifier at 0
+                        stats.setAttribute(i, stat);
+                        return true;
+                    }
+                }
+                else
+                {
+                    stat.setModifier(stat.getModifier() - magnitude);
+                    stats.setAttribute(i, stat);
+                    return true;
+                }
+            }
+            else if (effectId == ESM::MagicEffect::FortifyAttribute && effectArg == i)
+            {
+                stat.setModifier(stat.getModifier() + magnitude);
+                stats.setAttribute(i, stat);
+                return true;
+            }
+        }
+
+        // skills
+        if (target.getClass().isNpc())
+        {          
+            for(int i = 0;i < ESM::Skill::Length;++i)
+            {
+                NpcStats &npcStats = target.getClass().getNpcStats(target);
+                SkillValue& skill = npcStats.getSkill(i);
+                if ((effectId == ESM::MagicEffect::DrainSkill && effectArg == i) || (effectId == ESM::MagicEffect::AbsorbSkill && effectArg == i))
+                {
+                    if (magnitude < 0) // if magnitude is negative it means the drain effect is ending or was removed
+                    {
+                        if (skill.getModifier() > 0) // if we have a positive modifier, do nothing
+                            continue;
+                    else
+                    {
+                        skill.setModifier(std::min(skill.getModifier() - magnitude, 0.f)); // otherwise cap the modifier at 0
+                        return true;
+                    }
+                }
+                else
+                {
+                    skill.setModifier(skill.getModifier() - magnitude);
+                    return true;
+                }
+                }
+                else if (effectId == ESM::MagicEffect::FortifySkill && effectArg == i)
+                {
+                    skill.setModifier(skill.getModifier() + magnitude);
+                    return true;
+                }
+            }
+        }
+
+        if (effectId == ESM::MagicEffect::FortifyMaximumMagicka)
+        {
+            stats.setNeedRecalcDynamicStats(true);
+            return true;
+        }
+
+        return false;
     }
 
 }

@@ -1216,8 +1216,8 @@ namespace MWMechanics
         if (magnitude == 0.f)
             return false;
 
-        short effectId = effect.mId;
-        short effectArg = effect.mArg;
+        const short effectId = effect.mId;
+        const short effectArg = effect.mArg;
         MWMechanics::CreatureStats& stats = target.getClass().getCreatureStats(target);
 
         // health, magicka and fatigue

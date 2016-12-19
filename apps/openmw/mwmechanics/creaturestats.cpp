@@ -458,7 +458,7 @@ namespace MWMechanics
         mOnLoadGame = value;
     }
 
-    bool CreatureStats::getOnLoadGame()
+    bool CreatureStats::getOnLoadGame() const
     {
         return mOnLoadGame;
     }

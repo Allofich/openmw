@@ -435,9 +435,9 @@ namespace MWMechanics
 
         MagicEffects now = creatureStats.getSpells().getMagicEffects();
 
-        if (creature.getTypeName()==typeid (ESM::NPC).name())
+        if (creature.getTypeName() == typeid(ESM::NPC).name())
         {
-            MWWorld::InventoryStore& store = creature.getClass().getInventoryStore (creature);
+            const MWWorld::InventoryStore& store = creature.getClass().getInventoryStore(creature);
             now += store.getMagicEffects();
         }
 
@@ -487,7 +487,7 @@ namespace MWMechanics
     {
         CreatureStats& creatureStats = ptr.getClass().getCreatureStats (ptr);
 
-        int intelligence = creatureStats.getAttribute(ESM::Attribute::Intelligence).getModified();
+        const int intelligence = creatureStats.getAttribute(ESM::Attribute::Intelligence).getModified();
 
         float base = 1.f;
         if (ptr == getPlayer())
@@ -495,12 +495,12 @@ namespace MWMechanics
         else
             base = MWBase::Environment::get().getWorld()->getStore().get<ESM::GameSetting>().find("fNPCbaseMagickaMult")->getFloat();
 
-        double magickaFactor = base +
+        const double magickaFactor = base +
             creatureStats.getMagicEffects().get (EffectKey (ESM::MagicEffect::FortifyMaximumMagicka)).getMagnitude() * 0.1;
 
         DynamicStat<float> magicka = creatureStats.getMagicka();
-        float diff = (static_cast<int>(magickaFactor*intelligence)) - magicka.getBase();
-        float currentToBaseRatio = (magicka.getCurrent() / magicka.getBase());
+        const float diff = (static_cast<int>(magickaFactor*intelligence)) - magicka.getBase();
+        const float currentToBaseRatio = (magicka.getCurrent() / magicka.getBase());
         if (magicka.getCurrent() > 0)
             magicka.setModified(magicka.getModified() + diff, 0);
         magicka.setCurrent(magicka.getBase() * currentToBaseRatio, false, true);
@@ -577,45 +577,46 @@ namespace MWMechanics
         stats.setFatigue (fatigue);
     }
 
-    struct effectStruct
-    {
-        float mMagnitude;
-        float mRemainingTime;
-        MWMechanics::EffectKey mKey;
-
-        effectStruct(float magnitude, float remainingTime, MWMechanics::EffectKey key)
-            : mMagnitude(magnitude), mRemainingTime (remainingTime), mKey (key)
-        {
-        }
-
-        bool operator < (const effectStruct& str) const
-        {
-        return (mRemainingTime < str.mRemainingTime);
-        }
-
-    };
-
     class SortByRemainingTimeVisitor : public EffectSourceVisitor
     {
-            private:
-            bool dummy;
+        public:
+        struct Effect
+        {
+            float mMagnitude;
+            float mRemainingTime;
+            MWMechanics::EffectKey mKey;
 
-            public:
-            std::vector<effectStruct> mEffectsByRemainingTime;
-
-            SortByRemainingTimeVisitor(bool init)
-                : dummy(init)
+            Effect(float magnitude, float remainingTime, MWMechanics::EffectKey key)
+                : mMagnitude(magnitude), mRemainingTime (remainingTime), mKey (key)
             {
             }
-
-            virtual void visit (MWMechanics::EffectKey key,
-                                const std::string& /*sourceName*/, const std::string& /*sourceId*/, int /*casterActorId*/,
-                                float magnitude, float remainingTime = -1, float /*totalTime*/ = -1)
+            
+            bool operator < (const Effect& str) const
             {
-                effectStruct effect(magnitude, remainingTime, key);
-                mEffectsByRemainingTime.push_back(effect);
-                dummy = true;
+                return (mRemainingTime < str.mRemainingTime);
             }
+        };
+
+        std::vector<Effect> mEffectsByRemainingTime;
+
+        SortByRemainingTimeVisitor(bool /*unused*/)
+        {
+        }
+
+        virtual ~SortByRemainingTimeVisitor() { }
+
+        virtual void visit (MWMechanics::EffectKey key,
+                const std::string& /*sourceName*/, const std::string& /*sourceId*/, int /*casterActorId*/,
+                float magnitude, float remainingTime = -1, float /*totalTime*/ = -1)
+        {
+            Effect effect(magnitude, remainingTime, key);
+            mEffectsByRemainingTime.push_back(effect);
+        }
+
+        void sort()
+        {
+            std::sort(mEffectsByRemainingTime.begin(), mEffectsByRemainingTime.end());
+        }
     };
 
     void Actors::calculateCreatureStatModifiers (const MWWorld::Ptr& ptr, float duration)
@@ -623,7 +624,7 @@ namespace MWMechanics
         CreatureStats &creatureStats = ptr.getClass().getCreatureStats(ptr);
         const MagicEffects &effects = creatureStats.getMagicEffects();
 
-        bool wasDead = creatureStats.isDead();
+        const bool wasDead = creatureStats.isDead();
 
         if (duration > 0)
         {
@@ -635,10 +636,10 @@ namespace MWMechanics
             // Sort effects by remaining time, so effects that should end first will be applied first
             SortByRemainingTimeVisitor sorter(true);
             creatureStats.getActiveSpells().visitEffectSources(sorter);
-            std::sort(sorter.mEffectsByRemainingTime.begin(), sorter.mEffectsByRemainingTime.end());
+            sorter.sort();
 
             // Apply the expiring effects for their remaining time if it is shorter than the duration variable
-            for (std::vector<effectStruct>::const_iterator iter = sorter.mEffectsByRemainingTime.begin(); iter != sorter.mEffectsByRemainingTime.end(); iter++)
+            for (std::vector<SortByRemainingTimeVisitor::Effect>::const_iterator iter = sorter.mEffectsByRemainingTime.begin(); iter != sorter.mEffectsByRemainingTime.end(); iter++)
             {
                 if (iter->mMagnitude > 0 && iter->mRemainingTime > 0 && iter->mRemainingTime < duration)
                 {

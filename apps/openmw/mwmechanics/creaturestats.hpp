@@ -221,7 +221,7 @@ namespace MWMechanics
         bool getBlock() const;
 
         void setOnLoadGame(bool value);
-        bool getOnLoadGame();
+        bool getOnLoadGame() const;
 
         std::map<SummonKey, int>& getSummonedCreatureMap(); // <SummonKey, ActorId of summoned creature>
         std::vector<int>& getSummonedCreatureGraveyard(); // ActorIds

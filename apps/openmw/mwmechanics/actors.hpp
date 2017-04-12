@@ -118,6 +118,9 @@ namespace MWMechanics
 
             void cleanupSummonedCreature (CreatureStats& casterStats, int creatureActorId);
 
+            /// Returns actor which this actor is following or escorting
+            MWWorld::Ptr getActorFollowedBy(const MWWorld::Ptr& actor);
+
             ///Returns the list of actors which are siding with the given actor in fights
             /**ie AiFollow or AiEscort is active and the target is the actor **/
             std::list<MWWorld::Ptr> getActorsSidingWith(const MWWorld::Ptr& actor);

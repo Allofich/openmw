@@ -1520,6 +1520,26 @@ namespace MWMechanics
         }
     }
 
+    MWWorld::Ptr Actors::getActorFollowedBy(const MWWorld::Ptr& actor)
+    {
+        MWWorld::Ptr followed = MWWorld::Ptr();
+        if (actor != getPlayer())
+        {
+            const CreatureStats &stats = actor.getClass().getCreatureStats(actor);
+            for (std::list<MWMechanics::AiPackage*>::const_iterator it = stats.getAiSequence().begin(); it != stats.getAiSequence().end(); ++it)
+            {
+                if ((*it)->sideWithTarget() && !(*it)->getTarget().isEmpty())
+                {
+                    followed = (*it)->getTarget();
+                    break;
+                }
+                else if ((*it)->getTypeId() != MWMechanics::AiPackage::TypeIdCombat)
+                    break;
+            }
+        }
+        return followed;
+    }
+
     std::list<MWWorld::Ptr> Actors::getActorsSidingWith(const MWWorld::Ptr& actor)
     {
         std::list<MWWorld::Ptr> list;
@@ -1590,10 +1610,49 @@ namespace MWMechanics
     }
 
     void Actors::getActorsSidingWith(const MWWorld::Ptr &actor, std::set<MWWorld::Ptr>& out) {
-        std::list<MWWorld::Ptr> followers = getActorsSidingWith(actor);
-        for(std::list<MWWorld::Ptr>::iterator it = followers.begin();it != followers.end();++it)
+        // To minimize wasteful searching, we want to find an actor at the top of the followers/escorters hierarchy, who
+        // is either not following/escorting anyone else, or their target is also following/escorting them
+        
+        MWWorld::Ptr highestFound = getActorFollowedBy(actor);
+        
+        if (!highestFound.isEmpty())
+        {
+            std::vector<MWWorld::Ptr> followedVector;
+            followedVector.push_back(highestFound);
+            
+            // Also add the original actor. This will shorten processing if this is a circular follow/escort relationship
+            followedVector.push_back(actor);
+            
+            // Keep climbing up the hierarchy until we find an actor that either doesn't follow anyone or follows someone already found lower in the hierarchy
+            MWWorld::Ptr next = getActorFollowedBy(highestFound);
+            while (!next.isEmpty())
+            {
+                if (std::find(followedVector.begin(), followedVector.end(), next) == followedVector.end())
+                {
+                    followedVector.push_back(next);
+                    highestFound = next;
+                    next = getActorFollowedBy(highestFound);
+                }
+                else
+                // Otherwise stop and use the last actor found
+                    break;
+            }
+        }
+
+        std::list<MWWorld::Ptr> followers;
+        if (highestFound.isEmpty()) // If highestFound is still empty, it means actor was not following/escorting anything and is the top of the hierarchy.
+            highestFound = actor;
+
+        followers = getActorsFollowing(highestFound);
+
+        for (std::list<MWWorld::Ptr>::iterator it = followers.begin(); it != followers.end(); ++it)
             if (out.insert(*it).second)
                 getActorsSidingWith(*it, out);
+        
+        // Insert the top actor of the hierarchy into the result
+        out.insert(highestFound);
+        // and remove actor, which may be the same
+        out.erase(actor);
     }
 
     void Actors::getActorsSidingWith(const MWWorld::Ptr &actor, std::set<MWWorld::Ptr>& out, std::map<const MWWorld::Ptr, const std::set<MWWorld::Ptr> >& cachedAllies) {

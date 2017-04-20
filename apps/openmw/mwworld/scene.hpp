@@ -97,7 +97,7 @@ namespace MWWorld
 
             void playerMoved (const osg::Vec3f& pos);
 
-            void changePlayerCell (CellStore* newCell, const ESM::Position& position, bool adjustPlayerPos);
+            void changePlayerCell (CellStore* cell, const ESM::Position& pos, bool adjustPlayerPos);
 
             CellStore *getCurrentCell();
 

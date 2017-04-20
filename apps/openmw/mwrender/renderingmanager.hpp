@@ -103,7 +103,7 @@ namespace MWRender
 
         void configureAmbient(const ESM::Cell* cell);
         void configureFog(const ESM::Cell* cell);
-        void configureFog(float fogDepth, float underwaterFog, const osg::Vec4f& colour);
+        void configureFog(float fogDepth, float underwaterFog, const osg::Vec4f& color);
 
         void addCell(const MWWorld::CellStore* store);
         void removeCell(const MWWorld::CellStore* store);

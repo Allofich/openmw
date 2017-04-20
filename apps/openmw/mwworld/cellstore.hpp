@@ -199,8 +199,8 @@ namespace MWWorld
             }
 
             /// @param readerList The readers to use for loading of the cell on-demand.
-            CellStore (const ESM::Cell *cell_,
-                       const MWWorld::ESMStore& store,
+            CellStore (const ESM::Cell *cell,
+                       const MWWorld::ESMStore& esmStore,
                        std::vector<ESM::ESMReader>& readerList);
 
             const ESM::Cell *getCell() const;

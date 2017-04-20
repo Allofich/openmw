@@ -26,11 +26,11 @@ namespace MWMechanics
     {
         public:
             /// Follow Actor for duration or until you arrive at a world position
-            AiFollow(const std::string &ActorId,float duration, float X, float Y, float Z);
+            AiFollow(const std::string &actorId,float duration, float x, float y, float z);
             /// Follow Actor for duration or until you arrive at a position in a cell
-            AiFollow(const std::string &ActorId,const std::string &CellId,float duration, float X, float Y, float Z);
+            AiFollow(const std::string &actorId,const std::string &cellId,float duration, float x, float y, float z);
             /// Follow Actor indefinitively
-            AiFollow(const std::string &ActorId, bool commanded=false);
+            AiFollow(const std::string &actorId, bool commanded=false);
 
             AiFollow(const ESM::AiSequence::AiFollow* follow);
 

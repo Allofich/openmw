@@ -34,7 +34,7 @@ namespace MWMechanics
             //
             // NOTE: if start equals end an empty path is returned
             std::list<ESM::Pathgrid::Point> aStarSearch(const int start,
-                                                        const int end) const;
+                                                        const int goal) const;
         private:
 
             const ESM::Cell *mCell;

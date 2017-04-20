@@ -316,7 +316,7 @@ protected:
     void addAnimSource(const std::string &model);
 
     /** Adds an additional light to the given node using the specified ESM record. */
-    void addExtraLight(osg::ref_ptr<osg::Group> parent, const ESM::Light *light);
+    void addExtraLight(osg::ref_ptr<osg::Group> parent, const ESM::Light *esmLight);
 
     void clearAnimSources();
 

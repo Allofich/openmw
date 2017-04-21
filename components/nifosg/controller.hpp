@@ -133,7 +133,7 @@ namespace NifOsg
     struct LerpFunc
     {
         template <typename ValueType>
-        inline ValueType operator()(const ValueType& a, const ValueType& b, float fraction)
+        inline ValueType operator()(const ValueType& a, const ValueType& b, float fraction) const
         {
             return a + ((b - a) * fraction);
         }
@@ -141,7 +141,7 @@ namespace NifOsg
 
     struct QuaternionSlerpFunc
     {
-        inline osg::Quat operator()(const osg::Quat& a, const osg::Quat& b, float fraction)
+        inline osg::Quat operator()(const osg::Quat& a, const osg::Quat& b, float fraction) const
         {
             osg::Quat result;
             result.slerp(fraction, a, b);

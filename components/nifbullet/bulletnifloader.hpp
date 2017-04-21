@@ -39,12 +39,12 @@ public:
 
     virtual ~BulletNifLoader();
 
-    void warn(const std::string &msg)
+    static void warn(const std::string &msg)
     {
         std::cerr << "NIFLoader: Warn:" << msg << "\n";
     }
 
-    void fail(const std::string &msg)
+    static void fail(const std::string &msg)
     {
         std::cerr << "NIFLoader: Fail: "<< msg << std::endl;
         abort();

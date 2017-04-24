@@ -1,5 +1,4 @@
 os:
- - linux
  - osx
 osx_image: xcode8.2
 language: cpp
@@ -7,9 +6,7 @@ sudo: required
 dist: trusty
 branches:
   only:
-    - master
-    - coverity_scan
-    - /openmw-.*$/
+    - compile3
 env:
   global:
    # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
@@ -76,14 +73,4 @@ deploy:
   condition: "$TRAVIS_EVENT_TYPE = cron && $TRAVIS_OS_NAME = osx"
   repo: OpenMW/openmw
 notifications:
-  email:
-    recipients:
-      - corrmage+travis-ci@gmail.com
-    on_success: change
-    on_failure: always
-  irc:
-    channels:
-      - "chat.freenode.net#openmw"
-    on_success: change
-    on_failure: always
-    use_notice: true
+  email: false

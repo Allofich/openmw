@@ -2,13 +2,10 @@ version: "{build}"
 
 branches:
     only:
-        - master
-        - /openmw-.*$/
-        - appveyor
+        - compile3
 
 environment:
     matrix:
-        - msvc: 2013
         - msvc: 2015
 
 platform:

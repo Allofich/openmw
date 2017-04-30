@@ -1241,12 +1241,12 @@ namespace MWMechanics
             static int currentMusic = 0;
 
             if (currentMusic != 1 && hostilesCount == 0 && !(player.getClass().getCreatureStats(player).isDead() &&
-            MWBase::Environment::get().getSoundManager()->isMusicPlaying()))
+            MWBase::Environment::get().getSoundManager()->isMusicPlaying()) && (MWBase::Environment::get().getSoundManager()->getCurrentPlaylist() != "Explore"))
             {
                 MWBase::Environment::get().getSoundManager()->playPlaylist(std::string("Explore"));
                 currentMusic = 1;
             }
-            else if (currentMusic != 2 && hostilesCount > 0)
+            else if (currentMusic != 2 && hostilesCount > 0 && (MWBase::Environment::get().getSoundManager()->getCurrentPlaylist() != "Battle"))
             {
                 MWBase::Environment::get().getSoundManager()->playPlaylist(std::string("Battle"));
                 currentMusic = 2;

@@ -384,6 +384,10 @@ namespace MWSound
         startRandomTitle();
     }
 
+    std::string SoundManager::getCurrentPlaylist()
+    {
+        return mCurrentPlaylist;
+    }
 
     void SoundManager::say(const MWWorld::ConstPtr &ptr, const std::string &filename)
     {

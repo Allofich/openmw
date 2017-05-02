@@ -126,7 +126,6 @@ void CSMTools::TopicInfoCheckStage::perform(int stage, CSMDoc::Messages& message
 
     if (topicInfo.mData.mGender < -1 || topicInfo.mData.mGender > 1)
     {
-        std::ostringstream stream;
         messages.add(id, "Gender: Value is invalid", "", CSMDoc::Message::Severity_Error);
     }
 

@@ -893,7 +893,6 @@ int CSMWorld::Data::startLoading (const boost::filesystem::path& path, bool base
     // Don't delete the Reader yet. Some record types store a reference to the Reader to handle on-demand loading
     boost::shared_ptr<ESM::ESMReader> ptr(mReader);
     mReaders.push_back(ptr);
-    mReader = 0;
 
     mDialogue = 0;
 

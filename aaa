@@ -1,0 +1,105 @@
+
+6>\.\components/debug/debuglog.hpp(50): warning C4180: qualifier applied to function type has no meaning; ignored (compiling source file \components\to_utf8\to_utf8.cpp)
+6>  \components\to_utf8\to_utf8.cpp(323): note: see reference to function template instantiation 'Log &Log::operator <<<std::ios_base&(std::ios_base &)>(T (__cdecl &))' being compiled
+6>          with
+6>          [
+6>              T=std::ios_base &(std::ios_base &)
+6>          ]
+
+6>\.\components/debug/debuglog.hpp(50): warning C4180: qualifier applied to function type has no meaning; ignored (compiling source file \components\esm\cellref.cpp)
+6>  \components\esm\cellref.cpp(51): note: see reference to function template instantiation 'Log &Log::operator <<<std::ios_base&(std::ios_base &)>(T (__cdecl &))' being compiled
+6>          with
+6>          [
+6>              T=std::ios_base &(std::ios_base &)
+6>          ]
+
+6>\.\components/debug/debuglog.hpp(50): warning C4180: qualifier applied to function type has no meaning; ignored (compiling source file \components\sdlutil\sdlinputwrapper.cpp)
+6>  \components\sdlutil\sdlinputwrapper.cpp(163): note: see reference to function template instantiation 'Log &Log::operator <<<std::ios_base&(std::ios_base &)>(T (__cdecl &))' being compiled
+6>          with
+6>          [
+6>              T=std::ios_base &(std::ios_base &)
+6>          ]
+
+3>  local_tinyxml.vcxproj -> \MSVC2015_64\extern\oics\Release\local_tinyxml.lib
+\extern\oics\tinyxml.cpp(137): warning C6054: String 'buf' might not be zero-terminated.
+
+6>  components.vcxproj -> \MSVC2015_64\components\Release\components.lib
+\msvc2015_64\deps\osg\include\osgdb\outputstream(148): warning C6326: Potential comparison of a constant with another constant.
+\msvc2015_64\deps\osg\include\osgdb\outputstream(149): warning C6326: Potential comparison of a constant with another constant.
+\msvc2015_64\deps\osg\include\osgdb\outputstream(153): warning C6326: Potential comparison of a constant with another constant.
+\msvc2015_64\deps\osg\include\osgdb\outputstream(154): warning C6326: Potential comparison of a constant with another constant.
+\components\resource\bulletshape.cpp(77): warning C28182: Dereferencing NULL pointer. 'shape' contains the same NULL value as 'trishape' did. See line 50 for an earlier location where this can occur
+\components\nif\niffile.cpp(187): warning C6011: Dereferencing NULL pointer 'r'. 
+\components\nifosg\nifloader.cpp(135): warning C6330: 'const char' passed as _Param_(1) when 'unsigned char' is required in call to 'isspace'.
+\components\nifosg\nifloader.cpp(146): warning C6330: 'const char' passed as _Param_(1) when 'unsigned char' is required in call to 'isspace'.
+\components\nifosg\nifloader.cpp(149): warning C6330: 'const char' passed as _Param_(1) when 'unsigned char' is required in call to 'isspace'.
+\components\nifosg\nifloader.cpp(154): warning C6330: 'const char' passed as _Param_(1) when 'unsigned char' is required in call to 'isspace'.
+\components\nifosg\nifloader.cpp(261): warning C28182: Dereferencing NULL pointer. 'r' contains the same NULL value as 'nifNode' did. 
+\components\nifbullet\bulletnifloader.cpp(79): warning C28182: Dereferencing NULL pointer. 'r' contains the same NULL value as 'node' did. 
+\components\compiler\scanner.cpp(124): warning C6330: 'char' passed as _Param_(1) when 'unsigned char' is required in call to 'isalpha'.
+\components\compiler\scanner.cpp(134): warning C6330: 'char' passed as _Param_(1) when 'unsigned char' is required in call to 'isdigit'.
+\components\compiler\scanner.cpp(176): warning C6330: 'char' passed as _Param_(1) when 'unsigned char' is required in call to 'isdigit'.
+\components\compiler\scanner.cpp(235): warning C6330: 'char' passed as _Param_(1) when 'unsigned char' is required in call to 'isdigit'.
+\components\compiler\scanner.cpp(240): warning C6330: 'char' passed as _Param_(1) when 'unsigned char' is required in call to 'isalpha'.
+\components\compiler\scanner.cpp(414): warning C6330: 'char' passed as _Param_(1) when 'unsigned char' is required in call to 'isdigit'.
+\components\compiler\scanner.cpp(588): warning C6330: 'char' passed as _Param_(1) when 'unsigned char' is required in call to 'isalpha'.
+\components\compiler\scanner.cpp(588): warning C6330: 'char' passed as _Param_(1) when 'unsigned char' is required in call to 'isdigit'.
+\components\widgets\box.cpp(171): warning C28182: Dereferencing NULL pointer. 'w' contains the same NULL value as 'aw' did. See line 157 for an earlier location where this can occur
+\components\widgets\box.cpp(326): warning C28182: Dereferencing NULL pointer. 'w' contains the same NULL value as 'aw' did. See line 311 for an earlier location where this can occur
+\msvc2015_64\deps\qt\5.7\msvc2015_64\include\qtgui\qpixelformat.h(220): warning C6326: Potential comparison of a constant with another constant.
+
+12>  \MSVC2015_64\deps\Boost\boost/math/common_factor_ct.hpp(16): note: This header is deprecated. Use <boost/integer/common_factor_ct.hpp> instead.
+12>  \MSVC2015_64\deps\Boost\boost/math/common_factor_rt.hpp(13): note: This header is deprecated. Use <boost/integer/common_factor_rt.hpp> instead.
+12>  \MSVC2015_64\deps\Boost\boost/math/common_factor.hpp(16): note: This header is deprecated. Use <boost/integer/common_factor.hpp> instead.
+
+9>  /apps/opencs/model/world/resourcetable.hpp(0): Note: No relevant classes found. No output generated.
+
+\msvc2015_64\deps\qt\5.7\msvc2015_64\include\qtgui\qpixelformat.h(220): warning C6326: Potential comparison of a constant with another constant.
+
+9>  Building Custom Rule /apps/opencs/CMakeLists.txt
+9>  CMake does not need to re-run because /MSVC2015_64/apps/opencs/CMakeFiles/generate.stamp is up-to-date.
+
+13>  openmw-wizard.vcxproj -> \MSVC2015_64\Release\openmw-wizard.exe
+\msvc2015_64\deps\qt\5.7\msvc2015_64\include\qtgui\qpixelformat.h(220): warning C6326: Potential comparison of a constant with another constant.
+
+\msvc2015_64\deps\osg\include\osgdb\outputstream(148): warning C6326: Potential comparison of a constant with another constant.
+\msvc2015_64\deps\osg\include\osgdb\outputstream(149): warning C6326: Potential comparison of a constant with another constant.
+\msvc2015_64\deps\osg\include\osgdb\outputstream(153): warning C6326: Potential comparison of a constant with another constant.
+\msvc2015_64\deps\osg\include\osgdb\outputstream(154): warning C6326: Potential comparison of a constant with another constant.
+
+8>  \MSVC2015_64\deps\Boost\boost/math/common_factor_ct.hpp(16): note: This header is deprecated. Use <boost/integer/common_factor_ct.hpp> instead.
+8>  \MSVC2015_64\deps\Boost\boost/math/common_factor_rt.hpp(13): note: This header is deprecated. Use <boost/integer/common_factor_rt.hpp> instead.
+8>  \MSVC2015_64\deps\Boost\boost/math/common_factor.hpp(16): note: This header is deprecated. Use <boost/integer/common_factor.hpp> instead.
+
+8>  openmw.vcxproj -> \MSVC2015_64\Release\openmw.exe
+\msvc2015_64\deps\osg\include\osgdb\outputstream(148): warning C6326: Potential comparison of a constant with another constant.
+\msvc2015_64\deps\osg\include\osgdb\outputstream(149): warning C6326: Potential comparison of a constant with another constant.
+\msvc2015_64\deps\osg\include\osgdb\outputstream(153): warning C6326: Potential comparison of a constant with another constant.
+\msvc2015_64\deps\osg\include\osgdb\outputstream(154): warning C6326: Potential comparison of a constant with another constant.
+\apps\openmw\mwdialogue\keywordsearch.hpp(86): warning C6330: 'const char' passed as _Param_(1) when 'unsigned char' is required in call to 'isalpha'.
+\apps\openmw\mwscript\miscextensions.cpp(1085): warning C6011: Dereferencing NULL pointer 'spell'. 
+\apps\openmw\mwworld\cellstore.cpp(259): warning C6011: Dereferencing NULL pointer 'cellToMoveTo'. 
+\apps\openmw\mwclass\npc.cpp(51): warning C6031: Return value ignored: 'modf'.
+\apps\openmw\mwmechanics\autocalcspell.cpp(187): warning C6011: Dereferencing NULL pointer 'weakestSpell'. 
+\apps\openmw\mwstate\charactermanager.cpp(61): warning C6330: 'const char' passed as _Param_(1) when 'unsigned char' is required in call to 'isalnum'.
+\apps\openmw\main.cpp(272): warning C28251: Inconsistent annotation for 'WinMain': this instance has no annotations. See c:\program files (x86)\windows kits\8.1\include\um\winbase.h(905). 
+\msvc2015_64\deps\boost\boost\lexical_cast\detail\converter_lexical_streams.hpp(372): warning C6323: Use of arithmetic operator on Boolean type(s).
+
+\msvc2015_64\deps\boost\boost\interprocess\detail\win32_api.hpp(1340): warning C26135: Missing annotation _Releases_lock_(handle) at function 'boost::interprocess::winapi::release_mutex'.
+\msvc2015_64\deps\boost\boost\interprocess\detail\win32_api.hpp(1366): warning C6248: Setting a SECURITY_DESCRIPTOR's DACL to NULL will result in an unprotected object.
+\msvc2015_64\deps\boost\boost\interprocess\detail\os_file_functions.hpp(242): warning C6282: Incorrect operator:  assignment of constant in Boolean context. Consider using '==' instead.
+\msvc2015_64\deps\boost\boost\interprocess\detail\os_file_functions.hpp(271): warning C6282: Incorrect operator:  assignment of constant in Boolean context. Consider using '==' instead.
+\msvc2015_64\deps\qt\5.7\msvc2015_64\include\qtgui\qpixelformat.h(220): warning C6326: Potential comparison of a constant with another constant.
+\msvc2015_64\deps\boost\boost\lexical_cast\detail\converter_lexical_streams.hpp(372): warning C6323: Use of arithmetic operator on Boolean type(s).
+\msvc2015_64\deps\qt\5.7\msvc2015_64\include\qtcore\qvector.h(374): warning C6011: Dereferencing NULL pointer 'd'. 
+\apps\opencs\model\world\commanddispatcher.cpp(170): warning C28182: Dereferencing NULL pointer. 'model' contains the same NULL value as 'proxy' did. See line 143 for an earlier location where this can occur
+\msvc2015_64\deps\qt\5.7\msvc2015_64\include\qtcore\qvector.h(546): warning C6011: Dereferencing NULL pointer 'x'. 
+\msvc2015_64\deps\qt\5.7\msvc2015_64\include\qtcore\qvector.h(494): warning C6011: Dereferencing NULL pointer 'd'. 
+\apps\opencs\model\world\refcollection.cpp(27): warning C6282: Incorrect operator:  assignment of constant in Boolean context. Consider using '==' instead.
+\apps\opencs\model\world\nestedcoladapterimp.cpp(347): warning C6001: Using uninitialized memory 'soundRef'.
+\apps\opencs\model\filter\parser.cpp(106): warning C6330: 'char' passed as _Param_(1) when 'unsigned char' is required in call to 'isalpha'.
+\apps\opencs\model\filter\parser.cpp(106): warning C6330: 'char' passed as _Param_(1) when 'unsigned char' is required in call to 'isdigit'.
+\apps\opencs\model\filter\parser.cpp(153): warning C6330: 'char' passed as _Param_(1) when 'unsigned char' is required in call to 'isdigit'.
+\apps\opencs\model\filter\parser.cpp(228): warning C6330: 'char' passed as _Param_(1) when 'unsigned char' is required in call to 'isalpha'.
+\apps\opencs\model\filter\parser.cpp(231): warning C6330: 'char' passed as _Param_(1) when 'unsigned char' is required in call to 'isdigit'.
+
